@@ -2,7 +2,8 @@ import * as jsYaml from 'js-yaml';
 import createError from 'http-errors';
 import fs from 'fs';
 import path from 'path';
-import { V1ConfigMap } from '@kubernetes/client-node';
+import { V1ConfigMap, V1ObjectMeta, V1PersistentVolumeClaim, V1PersistentVolumeClaimSpec, V1ResourceRequirements } from '@kubernetes/client-node';
+import * as nb from './notebookUtils';
 import {
   BUILD_PHASE,
   BuildKind,
@@ -16,6 +17,10 @@ import {
   KubeFastifyInstance,
   OdhApplication,
   OdhDocument,
+  Notebook,
+  NotebookPost,
+  Volume,
+  DataVolume,
 } from '../types';
 import {
   DEFAULT_ACTIVE_TIMEOUT,
@@ -296,6 +301,76 @@ export const fetchBuilds = async (fastify: KubeFastifyInstance): Promise<BuildSt
   });
 
   return Promise.all(getters);
+};
+
+export const createPVC = async (fastify: KubeFastifyInstance, config: Volume|DataVolume): Promise<object> => {
+  let PVC: V1PersistentVolumeClaim = {
+    metadata: new V1ObjectMeta(),
+    spec: new V1PersistentVolumeClaimSpec
+  }
+  PVC.metadata.namespace = fastify.kube.namespace
+  PVC.metadata.name = config.name
+  PVC.spec.accessModes = [config.mode]
+  PVC.spec.storageClassName = null; // Placeholder
+  PVC.spec.resources = new V1ResourceRequirements
+  PVC.spec.resources.requests = {storage: config.size}
+  const createdPVC = await fastify.kube.coreV1Api
+    .createNamespacedPersistentVolumeClaim(
+      fastify.kube.namespace,
+      PVC,
+    )
+  return Promise.resolve(createdPVC)
+}
+
+export const postNotebook = async (fastify: KubeFastifyInstance, config: NotebookPost): Promise<object> => {
+  const normalizedPath = path.join(__dirname, '../../../data/notebooks/notebook_template.yaml');
+  let notebookTemplate: Notebook = null;
+
+  notebookTemplate = jsYaml.load(
+    fs.readFileSync(normalizedPath, 'utf8')
+  );
+  
+  notebookTemplate = nb.setImage(notebookTemplate, config)
+  notebookTemplate = nb.setImagePullPolicy(notebookTemplate, config)
+  notebookTemplate = nb.setCPU(notebookTemplate, config)
+  notebookTemplate = nb.setMemory(notebookTemplate, config)
+  notebookTemplate = nb.setGPU(notebookTemplate, config)
+  notebookTemplate = nb.setTolerations(notebookTemplate, config)
+  notebookTemplate = nb.setAffinity(notebookTemplate, config)
+  //notebookTemplate = nb.setConfigurations(notebookTemplate, config)
+
+  //Workspace Volume
+
+
+  //Data Volumes
+  config.datavols.forEach(datavol => {
+    if (datavol.type == "New") {
+      // Add Volume logic
+    }
+  });
+
+  return Promise.resolve(createNotebook(fastify, notebookTemplate))
+};
+
+
+// TODO: Add ensure authorized
+export const createNotebook = async (fastify: KubeFastifyInstance, notebook: Notebook): Promise<object> => {
+  const pod = await fastify.kube.customObjectsApi
+    .createNamespacedCustomObject(
+      "kubeflow.org",
+      "v1beta1", 
+      fastify.kube.namespace,
+      "notebooks",
+      notebook
+    )
+    .then((res) => {
+      return (res?.body)
+    })
+    .catch(() => {
+      return [];
+    });
+
+  return Promise.resolve(pod)
 };
 
 const getRefreshTimeForBuilds = (buildStatuses: BuildStatus[]): ResourceWatcherTimeUpdate => {

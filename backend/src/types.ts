@@ -214,3 +214,101 @@ export type BuildStatus = {
   status: BUILD_PHASE;
   timestamp?: string;
 };
+
+export type Notebook = {
+  apiVersion: string;
+  kind: string;
+  metadata: {
+    name: string;
+    namespace: string;
+    labels: {
+      app: string;
+    };
+    annotations: {};
+  }
+  spec: {
+    template: {
+      spec: {
+        serviceAccountName: string;
+        containers: [
+          {
+            name: string;
+            image: string;
+            imagePullPolicy?: string;
+            volumeMounts: MountPath[];
+            env: [];
+            resources: {
+              requests:{
+                cpu: string;
+                memory: string;
+              };
+              limits?:{
+                cpu?: string;
+                memory?: string;
+              }
+            };    
+          },
+        ];
+        volumes: Volume[];
+        tolerations: [];
+      };
+    };
+  };
+}
+
+export type NotebookPost = {
+  name: string;
+  namespace: string;
+  image: string;
+  allowCustomImage: boolean;
+  imagePullPolicy: string;
+  customImage: string;
+  customImageCheck: string;
+  serverType: string;
+  cpu: string;
+  cpuLimit?: string;
+  memory: string;
+  memoryLimit: string;
+  gpus: {
+    num: string;
+    vendor?: string;
+  };
+  noWorkspace: boolean;
+  workspace: {
+    type: string;
+    name: string;
+    templatedName: string;
+    size: string;
+    templatedPath: string;
+    mode: string;
+    class: string;
+    extraFields: {}
+  };
+  affinityConfig: string;
+  tolerationGroup: string;
+  datavols?: DataVolume[]
+  shm: boolean;
+  configurations?: []
+};
+
+export type Volume = {
+  name: string;
+  persistenVolumeClaim: {
+    claimName: string;
+  }
+  mode: string;
+  size: string;
+}
+
+export type DataVolume = {
+  name: string;
+  path: string;
+  type: string;
+  mode: string;
+  size: string;
+}
+
+export type MountPath = {
+  mountpath: string;
+  name: string;
+}
