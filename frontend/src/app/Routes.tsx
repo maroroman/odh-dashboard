@@ -8,6 +8,7 @@ const ExploreApplications = React.lazy(
   () => import('../pages/exploreApplication/ExploreApplications'),
 );
 const DataProjects = React.lazy(() => import('../pages/dataProjects/DataProjects'));
+const JupyterNotebooks = React.lazy(() => import('../pages/jupyterNotebooks/JupyterNotebooks'));
 const LearningCenterPage = React.lazy(() => import('../pages/learningCenter/LearningCenter'));
 const NotFound = React.lazy(() => import('../pages/NotFound'));
 
@@ -20,6 +21,7 @@ const Routes: React.FC = () => (
       <Route path="/explore" exact component={ExploreApplications} />
       <Route path="/data-projects" exact component={DataProjects} />
       <Route path="/resources" exact component={LearningCenterPage} />
+      <Route path="/notebooks" exact component={JupyterNotebooks}/>
       <Route component={NotFound} />
     </Switch>
   </React.Suspense>
