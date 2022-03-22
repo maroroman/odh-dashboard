@@ -11,7 +11,13 @@ import {
 
 import './DataProjectsToolbar.scss';
 
-const DataProjectsTableToolbar: React.FC = () => {
+type DataProjectsTableToolbarProps = {
+  setCreateProjectModalOpen: (isOpen: boolean) => void;
+};
+
+const DataProjectsTableToolbar: React.FC<DataProjectsTableToolbarProps> = ({
+  setCreateProjectModalOpen,
+}) => {
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
 
   const dropdownItems = [
@@ -28,28 +34,26 @@ const DataProjectsTableToolbar: React.FC = () => {
   };
 
   return (
-    <div className="odh-data-projects__toolbar">
-      <Toolbar>
-        <ToolbarContent>
-          <ToolbarItem>
-            <Button variant="primary" onClick={() => console.log('do something')}>
-              Create Project
-            </Button>
-          </ToolbarItem>
-          <ToolbarItem>
-            <Dropdown
-              onSelect={onDropdownSelect}
-              isOpen={isDropdownOpen}
-              toggle={
-                <KebabToggle onToggle={onDropdownToggle} id="projects-table-toolbar-dropdown" />
-              }
-              isPlain
-              dropdownItems={dropdownItems}
-            />
-          </ToolbarItem>
-        </ToolbarContent>
-      </Toolbar>
-    </div>
+    <Toolbar>
+      <ToolbarContent>
+        <ToolbarItem>
+          <Button variant="primary" onClick={() => setCreateProjectModalOpen(true)}>
+            Create data projects
+          </Button>
+        </ToolbarItem>
+        <ToolbarItem>
+          <Dropdown
+            onSelect={onDropdownSelect}
+            isOpen={isDropdownOpen}
+            toggle={
+              <KebabToggle onToggle={onDropdownToggle} id="projects-table-toolbar-dropdown" />
+            }
+            isPlain
+            dropdownItems={dropdownItems}
+          />
+        </ToolbarItem>
+      </ToolbarContent>
+    </Toolbar>
   );
 };
 

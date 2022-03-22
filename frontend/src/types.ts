@@ -8,6 +8,10 @@ export type DashboardConfig = {
   disableSupport: boolean;
 };
 
+export type ClusterSettings = {
+  pvcSize: number;
+};
+
 export type OdhApplication = {
   metadata: {
     name: string;
@@ -103,8 +107,6 @@ export type BuildStatus = {
   timestamp: string;
 };
 
-// SHOULD PROBABLY BE IN BACKEND
-
 export type ImageSoftwareType = {
   name: string;
   version?: string;
@@ -128,4 +130,90 @@ export type ImageType = {
   name: string;
   order: number;
   tags?: ImageTagType[];
+};
+
+export type ImageTag = {
+  image: string;
+  tag: string;
+};
+
+export type SizeDescription = {
+  name: string;
+  resources: {
+    limits: {
+      cpu: number;
+      memory: string;
+    };
+    requests: {
+      cpu: number;
+      memory: string;
+    };
+  };
+  schedulable?: boolean;
+};
+
+export type EnvVarType = {
+  name: string;
+  type: string;
+  value: string | number;
+};
+
+export type EnvVarCategoryType = {
+  name: string;
+  variables: [
+    {
+      name: string;
+      type: string;
+    },
+  ];
+};
+
+export type VariableRow = {
+  variableType: string;
+  variables: EnvVarType[];
+  errors: { [key: string]: string };
+};
+
+export enum DATA_SOURCE {
+  persistentVolume = 'pv',
+  databaseAccess = 'database',
+}
+
+export type Project = {
+  kind: string;
+  apiVersion: string;
+  metadata: {
+    name: string;
+    creationTimestamp: string;
+    labels?: { [key: string]: string };
+    annotations?: { [key: string]: string };
+  };
+  status: {
+    phase: string;
+  };
+};
+
+export type ProjectList = {
+  metadata: Record<string, unknown>;
+  items: Project[];
+};
+
+export type Notebook = {
+  apiVersion?: string;
+  kind?: string;
+  metadata: {
+    name: string;
+    namespace: string;
+    labels?: { [key: string]: string };
+    annotations?: { [key: string]: string };
+  };
+  spec?: Record<string, unknown>;
+  status?: Record<string, unknown>;
+};
+
+export type NotebookList = {
+  apiVersion?: string;
+  kind?: string;
+  metadata: Record<string, unknown>;
+  items: Notebook[];
 };

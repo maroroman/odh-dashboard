@@ -1,9 +1,6 @@
 import * as React from 'react';
 import {
   Divider,
-  Drawer,
-  DrawerContent,
-  DrawerContentBody,
   PageSection,
   EmptyState,
   EmptyStateIcon,
@@ -16,37 +13,100 @@ import ApplicationsPage from '../ApplicationsPage';
 import DataProjectsHeaderToolbar from './DataProjectsHeaderToolbar';
 import { LIST_VIEW, VIEW_TYPE } from './const';
 import { useLocalStorage } from '../../utilities/useLocalStorage';
-import DataProjectsDrawerPanel from './DataProjectsDrawerPanel';
 import DataProjectsTableToolbar from './DataProjectsTableToolbar';
 import DataProjectsTable from './DataProjectsTable';
-import { projects } from './mockData';
 
 import './DataProjects.scss';
 import { CubesIcon } from '@patternfly/react-icons';
-import CreateProjectModal from './CreateProjectModal';
+import CreateProjectModal from './modals/CreateProjectModal';
+import { useDispatch, useSelector } from 'react-redux';
+import { State } from '../../redux/types';
+import { Project, ProjectList } from '../../types';
+import { addNotification } from '../../redux/actions/actions';
+import {
+  deleteDataProject,
+  getDataProject,
+  getDataProjects,
+} from '../../services/dataProjectsService';
+import { useGetDataProjects } from '../../utilities/useGetDataProjects';
 
 const description = `Create new projects, or view everything you've been working on here.`;
 
-export const DataProjects: React.FC = () => {
-  const loaded = true; // temp
-  const isEmpty = true; // temp
+export const DataProjects: React.FC = React.memo(() => {
+  const dispatch = useDispatch();
   const [viewType, setViewType] = useLocalStorage(VIEW_TYPE);
-  const [isTableDrawerExpanded, setTableDrawerExpanded] = React.useState(false);
-  const [selectedProject, setSelectedProject] = React.useState(null);
+  const { dataProjects, loaded, loadError, updateDataProjects } = useGetDataProjects();
   const [isCreateProjectModalOpen, setCreateProjectModalOpen] = React.useState(false);
+  const [displayedProjects, setDisplayedProjects] = React.useState<Project[]>([]);
+  const [isEmpty, setEmpty] = React.useState<boolean>(true);
 
-  const handleProjectModalClose = () => {
+  React.useEffect(() => {
+    setEmpty(!dataProjects || dataProjects.items?.length <= 0);
+    setDisplayedProjects(dataProjects ? dataProjects.items || [] : []);
+  }, [dataProjects]);
+
+  const watchDataProjectStatus = (project: Project) => {
+    let watchHandle;
+    const projectName = project.metadata?.name;
+    const displayedProject = displayedProjects.find((proj) => proj.metadata.name === projectName);
+    if (!displayedProject) {
+      return;
+    }
+    const watchDataProject = () => {
+      getDataProject(projectName)
+        .then(async (newProject: Project) => {
+          if (newProject.status.phase !== displayedProject.status.phase) {
+            displayedProject.status.phase = newProject.status.phase;
+            updateDataProjects();
+          }
+          watchHandle = setTimeout(watchDataProject, 2000); // every 2 seconds
+        })
+        .catch((e) => {
+          if (e.statusCode === 404) {
+            dispatch(
+              addNotification({
+                status: 'success',
+                title: `Data project ${projectName} deleted successfully.`,
+                timestamp: new Date(),
+              }),
+            );
+            updateDataProjects();
+          } else {
+            dispatch(
+              addNotification({
+                status: 'danger',
+                title: `Error refreshing data projects list.`,
+                message: e.message,
+                timestamp: new Date(),
+              }),
+            );
+          }
+        });
+      clearTimeout(watchHandle);
+    };
+    watchDataProject();
+  };
+
+  const handleCreateProjectModalClose = () => {
     setCreateProjectModalOpen(false);
   };
 
-  const onProjectSelect = (project) => {
-    setSelectedProject(project);
-    setTableDrawerExpanded(true);
-  };
-
-  const onDrawerPanelClose = () => {
-    setSelectedProject(null);
-    setTableDrawerExpanded(false);
+  const onDeleteProject = async (project) => {
+    const projectName = project.metadata?.name;
+    try {
+      await deleteDataProject(projectName);
+    } catch (e: any) {
+      dispatch(
+        addNotification({
+          status: 'danger',
+          title: `Error deleting data project ${projectName}.`,
+          message: e.message,
+          timestamp: new Date(),
+        }),
+      );
+      return;
+    }
+    watchDataProjectStatus(project);
   };
 
   const emptyComponent = (
@@ -76,36 +136,25 @@ export const DataProjects: React.FC = () => {
         title="Projects"
         description={description}
         loaded={loaded}
+        loadError={loadError}
         empty={isEmpty}
         emptyComponent={emptyComponent}
       >
         <DataProjectsHeaderToolbar viewType={viewType || LIST_VIEW} updateViewType={setViewType} />
         <Divider />
         <PageSection variant="light" padding={{ default: 'noPadding' }} isFilled>
-          <Drawer isExpanded={isTableDrawerExpanded}>
-            <DrawerContent
-              panelContent={
-                <DataProjectsDrawerPanel
-                  selectedProject={selectedProject}
-                  onClose={onDrawerPanelClose}
-                />
-              }
-            >
-              <DrawerContentBody>
-                <DataProjectsTableToolbar />
-                <DataProjectsTable projects={projects} onSelect={onProjectSelect} />
-              </DrawerContentBody>
-            </DrawerContent>
-          </Drawer>
+          <DataProjectsTableToolbar setCreateProjectModalOpen={setCreateProjectModalOpen} />
+          <DataProjectsTable projects={displayedProjects} onDelete={onDeleteProject} />
         </PageSection>
       </ApplicationsPage>
       <CreateProjectModal
         isModalOpen={isCreateProjectModalOpen}
-        onClose={handleProjectModalClose}
+        onClose={handleCreateProjectModalClose}
       />
     </>
   );
-};
+});
+
 DataProjects.displayName = 'DataProjects';
 
 export default DataProjects;
