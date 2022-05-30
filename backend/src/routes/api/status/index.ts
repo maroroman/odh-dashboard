@@ -3,7 +3,7 @@ import { FastifyInstance, FastifyRequest } from 'fastify';
 import { KubeFastifyInstance, KubeStatus } from '../../../types';
 
 type groupObjResponse = {
-  users: string[];
+  users: string[] | null;
 };
 
 const status = async (
@@ -34,11 +34,14 @@ const status = async (
       adminGroup,
     );
     const adminUsers = (adminGroupResponse.body as groupObjResponse).users;
-    isAdmin = adminUsers.includes(userName);
+    if (!adminUsers || !adminUsers?.length) {
+      console.log('Warning: No admin user in admin groups');
+    } else {
+      isAdmin = adminUsers.includes(userName);
+    }
   } catch (e) {
-    console.log('Failed to get groups: ' + e.toString());
+    fastify.log.debug('Failed to get groups: ' + e.toString());
   }
-  fastify.kube.coreV1Api.getAPIResources();
   if (!kubeContext && !kubeContext.trim()) {
     const error = createError(500, 'failed to get kube status');
     error.explicitInternalServerError = true;
