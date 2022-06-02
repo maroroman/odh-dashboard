@@ -2,22 +2,66 @@ import k8s from '@kubernetes/client-node';
 import { User } from '@kubernetes/client-node/dist/config_types';
 import { FastifyInstance } from 'fastify';
 
-export type DashboardConfig = {
-  enablement: boolean;
-  disableInfo: boolean;
-  disableSupport: boolean;
-  disableClusterManager: boolean;
-  disableTracking: boolean;
-  disableBYONImageStream: boolean;
-  disableISVBadges: boolean;
-  disableAppLauncher: boolean;
+export type DashboardConfig = K8sResourceCommon & {
+  spec: {
+    dashboardConfig: {
+      enablement: boolean;
+      disableInfo: boolean;
+      disableSupport: boolean;
+      disableClusterManager: boolean;
+      disableTracking: boolean;
+      disableBYONImageStream: boolean;
+      disableISVBadges: boolean;
+      disableAppLauncher: boolean;
+    };
+    notebookSizes?: [
+      {
+        name: string;
+        resources: NotebookResources;
+      },
+    ];
+    notebookController?: {
+      enabled: boolean;
+      gpuConfig?: {
+        enabled: boolean;
+      };
+      envVarConfig?: {
+        enabled: boolean;
+      };
+    };
+    notebookControllerState?: [
+      {
+        user: string;
+        lastSelectedImage: string;
+        lastSelectedSize: string;
+        environmentVariables: EnvironmentVariable[];
+        secrets: string;
+      },
+    ];
+  };
+};
+
+export type NotebookResources = {
+  requests?: {
+    cpu?: string;
+    memory?: string;
+  };
+  limits: {
+    cpu?: string;
+    memory?: string;
+  };
+};
+
+export type EnvironmentVariable = {
+  key: string;
+  value: string;
 };
 
 export type ClusterSettings = {
   pvcSize: number;
   cullerTimeout: number;
   userTrackingEnabled: boolean | null;
-}
+};
 
 // Add a minimal QuickStart type here as there is no way to get types without pulling in frontend (React) modules
 export declare type QuickStart = {
@@ -41,7 +85,7 @@ export declare type QuickStart = {
 export type K8sResourceBase = {
   apiVersion?: string;
   kind?: string;
-}
+};
 
 export type K8sResourceCommon = {
   metadata?: {
@@ -54,7 +98,6 @@ export type K8sResourceCommon = {
     creationTimestamp?: Date;
   };
 } & K8sResourceBase;
-
 
 export enum BUILD_PHASE {
   none = 'Not started',
@@ -252,9 +295,9 @@ export type ODHSegmentKey = {
 export type NotebookError = {
   severity: string;
   message: string;
-}
+};
 
-export type NotebookStatus = "Importing" | "Validating" | "Succeeded" | "Failed";
+export type NotebookStatus = 'Importing' | 'Validating' | 'Succeeded' | 'Failed';
 
 export type Notebook = {
   id: string;
@@ -262,7 +305,8 @@ export type Notebook = {
   user?: string;
   uploaded?: Date;
   error?: NotebookError;
-} & NotebookCreateRequest & NotebookUpdateRequest;
+} & NotebookCreateRequest &
+  NotebookUpdateRequest;
 
 export type NotebookCreateRequest = {
   name: string;
@@ -272,7 +316,7 @@ export type NotebookCreateRequest = {
   user: string;
   software?: NotebookPackage[];
   packages?: NotebookPackage[];
-}
+};
 
 export type NotebookUpdateRequest = {
   id: string;
@@ -281,14 +325,13 @@ export type NotebookUpdateRequest = {
   visible?: boolean;
   software?: NotebookPackage[];
   packages?: NotebookPackage[];
-}
+};
 
 export type NotebookPackage = {
   name: string;
   version: string;
   visible: boolean;
-}
-
+};
 
 export type ImageStreamTagSpec = {
   name: string;
@@ -296,16 +339,16 @@ export type ImageStreamTagSpec = {
   from?: {
     kind: string;
     name: string;
-  }
-}
+  };
+};
 export type ImageStreamKind = {
   spec?: {
     lookupPolicy?: {
-      local: boolean
-    }
+      local: boolean;
+    };
     tags: ImageStreamTagSpec[];
-  }
-  status?: any
+  };
+  status?: any;
 } & K8sResourceCommon;
 
 export type ImageStreamListKind = {
@@ -317,26 +360,26 @@ export type PipelineRunKind = {
     params: {
       name: string;
       value: string;
-    }[]
+    }[];
     pipelineRef: {
       name: string;
-    }
+    };
     workspaces?: [
       {
-        name: string
+        name: string;
         volumeClaimTemplate: {
           spec: {
-            accessModes: string[]
+            accessModes: string[];
             resources: {
               requests: {
-                storage: string
-              }
-            }
-          }
-        }
-      }
-    ]
-  }
+                storage: string;
+              };
+            };
+          };
+        };
+      },
+    ];
+  };
 } & K8sResourceCommon;
 
 export type PipelineRunListKind = {
