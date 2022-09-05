@@ -11,6 +11,7 @@ type GPUSelectFieldProps = {
 const GPUSelectField: React.FC<GPUSelectFieldProps> = ({ value, setValue }) => {
   const [gpuDropdownOpen, setGpuDropdownOpen] = React.useState<boolean>(false);
   const [gpuSize, setGpuSize] = React.useState<number>();
+  const [gpuScale, setGpuScale] = React.useState<number>();
   const [isFetching, setFetching] = React.useState(true);
   const [areGpusAvailable, setAreGpusAvailable] = React.useState<boolean>(false);
   const notification = useNotification();
@@ -21,10 +22,10 @@ const GPUSelectField: React.FC<GPUSelectFieldProps> = ({ value, setValue }) => {
     const fetchGPU = () => {
       setFetching(true);
       lastCall = Date.now();
-      return getGPU().then(([areGpusAvailable, size]) => {
+      return getGPU().then((gpuInfo) => {
         if (cancelled) return;
-        setAreGpusAvailable(areGpusAvailable);
-        setGpuSize(size || 0);
+        setGpuSize(gpuInfo.available || 0);
+        setGpuScale(gpuInfo.scaleMax || 0);
         setFetching(false);
       });
     };
@@ -34,6 +35,7 @@ const GPUSelectField: React.FC<GPUSelectFieldProps> = ({ value, setValue }) => {
       setFetching(false);
       setAreGpusAvailable(false);
       setGpuSize(0);
+      setGpuScale(0);
       console.error(e);
       notification.error('Failed to fetch GPU', e.message);
     };

@@ -645,3 +645,8 @@ export type NotebookData = {
 };
 
 export type UsernameMap<V> = { [username: string]: V };
+
+export type GPUInfo = {
+  available: number;
+  scaleMax: number;
+}
