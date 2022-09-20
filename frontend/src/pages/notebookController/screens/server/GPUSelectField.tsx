@@ -25,6 +25,7 @@ const GPUSelectField: React.FC<GPUSelectFieldProps> = ({ value, setValue }) => {
       return getGPU().then((gpuInfo) => {
         if (cancelled) return;
         setGpuSize(gpuInfo.available || 0);
+        setAreGpusAvailable(gpuInfo.configured);
         setGpuScale(gpuInfo.scaleMax || 0);
         setFetching(false);
       });
