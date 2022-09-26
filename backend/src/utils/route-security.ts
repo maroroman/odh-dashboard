@@ -230,10 +230,18 @@ export const sanitizeNotebookForSecurity = async <
   fastify: KubeFastifyInstance,
   request: FastifyRequest,
   notebook: T,
+  params: {
+    user: string,
+    namespace: string,
+  },
 ): Promise<T> => {
   const secureNotebook = cloneDeep(notebook);
   const username = await getUserName(fastify, request);
-  const translatedUsername = usernameTranslate(username);
+  const isAdmin = await isUserAdmin(fastify, username, params.namespace);
+  let translatedUsername = usernameTranslate(username);
+  if (isAdmin) {
+    translatedUsername = usernameTranslate(params.user);
+  }
 
   // PVCs
   secureNotebook?.spec?.template?.spec?.volumes?.forEach((volume) => {
@@ -243,7 +251,7 @@ export const sanitizeNotebookForSecurity = async <
       if (volume.name !== allowedValue) {
         // Was not targeted at their user
         fastify.log.warn(
-          `${username} submitted a Notebook that contained a pvc (${volume.name}) that was not for them. Reset back to them.`,
+          `${translatedUsername} submitted a Notebook that contained a pvc (${volume.name}) that was not for them. Reset back to them.`,
         );
         fastify.log.warn(`PVC structure: ${JSON.stringify(volume)}`);
 

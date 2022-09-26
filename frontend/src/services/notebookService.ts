@@ -242,8 +242,8 @@ const assembleNotebook = (data: StartNotebookData): Notebook => {
 };
 
 /** We do not have a notebook, create the resources */
-const createNotebook = async (notebook: Notebook): Promise<Notebook> => {
-  const url = `/api/notebooks/${notebook.metadata.namespace}`;
+const createNotebook = async (notebook: Notebook, username: string): Promise<Notebook> => {
+  const url = `/api/notebooks/${notebook.metadata.namespace}/${username}`;
 
   return axios
     .post(url, notebook)
@@ -279,7 +279,7 @@ export const startNotebook = (data: StartNotebookData): Promise<Notebook> => {
       .then((responseData) => {
         if (!responseData) {
           // Successful 2xx, but no data... create
-          createNotebook(notebook).then(resolve).catch(reject);
+          createNotebook(notebook, data.username).then(resolve).catch(reject);
           return;
         }
 

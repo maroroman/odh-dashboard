@@ -61,12 +61,13 @@ module.exports = async (fastify: KubeFastifyInstance) => {
   );
 
   fastify.post(
-    '/:namespace',
+    '/:namespace/:user',
     secureRoute(fastify)(
       async (
         request: FastifyRequest<{
           Params: {
             namespace: string;
+            user: string;
           };
           Body: Notebook;
         }>,
@@ -85,12 +86,13 @@ module.exports = async (fastify: KubeFastifyInstance) => {
           Params: {
             namespace: string;
             name: string;
+            user: string;
           };
         }>,
         reply,
       ) => {
         const { namespace, name } = request.params;
-        const data = await sanitizeNotebookForSecurity(fastify, request, request.body);
+        const data = await sanitizeNotebookForSecurity(fastify, request, request.body, request.params);
 
         return patchNotebook(fastify, data, namespace, name).catch((e) => {
           fastify.log.error(`Failed to patch notebook, ${e.response?.data?.message || e.message}}`);

@@ -126,12 +126,13 @@ export const createNotebook = async (
   request: FastifyRequest<{
     Params: {
       namespace: string;
+      user: string;
     };
     Body: Notebook;
   }>,
 ): Promise<Notebook> => {
   const namespace = request.params.namespace;
-  const notebookData = await sanitizeNotebookForSecurity<Notebook>(fastify, request, request.body);
+  const notebookData = await sanitizeNotebookForSecurity<Notebook>(fastify, request, request.body, request.params);
   notebookData.metadata.namespace = namespace;
 
   if (!notebookData?.metadata?.annotations) {
