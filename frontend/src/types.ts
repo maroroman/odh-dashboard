@@ -646,8 +646,13 @@ export type NotebookData = {
 
 export type UsernameMap<V> = { [username: string]: V };
 
+export type gpuScale = {
+  maxScale: number;
+  gpuNumber: number;
+};
+
 export type GPUInfo = {
   configured: boolean;
   available: number;
-  scaleMax: number;
+  autoscalers: gpuScale[];
 };
