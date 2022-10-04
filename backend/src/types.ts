@@ -736,7 +736,15 @@ export type MachineAutoscaler = {
   };
 } & K8sResourceCommon;
 
-export type MachineSet = K8sResourceCommon;
+export type MachineSet = {
+  status: {
+    availableReplicas: number;
+    fullyLabeledReplicas: number;
+    observedGeneration: number;
+    readyReplicas: number;
+    replicas: number;
+  };
+} & K8sResourceCommon;
 
 export type MachineAutoscalerList = {
   items: MachineAutoscaler[];
@@ -747,7 +755,7 @@ export type MachineSetList = {
 } & K8sResourceCommon;
 
 export type gpuScale = {
-  maxScale: number;
+  availableScale: number;
   gpuNumber: number;
 };
 
