@@ -1,0 +1,16 @@
+name: quay.tag
+run-name: Creating new tag in quay based on pushed tag in github.
+on:
+  push:
+    tags:
+      - '*'
+jobs:
+  copy-tag-to-quay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: sudo apt-get -y update
+      - run: sudo apt-get -y install podman
+      - run: #Add login command
+      - run: tag=$(git describe --tags)
+      - run: podman tag quay.io/opendatahub/odh-dashboard:latest quay.io/opendatahub/odh-dashboard:${tag}
