@@ -18,8 +18,8 @@ jobs:
          podman login quay.io -u mroman_redhat+odh_dashboard -p ${QUAY_TOKEN}
       - shell: bash
         env:
-          TAG: $(git describe --tags)
-          HASH: $(git rev-parse --short HEAD)
+          TAG: ${{ git describe --tags }}
+          HASH: ${{ git rev-parse --short HEAD }}
         run: |
          podman tag quay.io/opendatahub/odh-dashboard:main-${HASH} quay.io/opendatahub/odh-dashboard:${TAG}
 
