@@ -8,7 +8,10 @@ jobs:
   copy-tag-to-quay:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Git checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: '0'
       - run: sudo apt-get -y update
       - run: sudo apt-get -y install podman
       - shell: bash
@@ -16,10 +19,16 @@ jobs:
           QUAY_TOKEN: ${{ secrets.QUAY_ROBOT_TOKEN }}
         run: |
          podman login quay.io -u mroman_redhat+odh_dashboard -p ${QUAY_TOKEN}
+      - name: Get latest tag name
+        id: tag
+        run: echo "tag=$(git describe --tags)" >> $GITHUB_OUTPUT
+      - name: Get latest hash
+        id: hash
+        run: echo "hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - shell: bash
         env:
-          TAG: ${{ git describe --tags }}
-          HASH: ${{ git rev-parse --short HEAD }}
+          TAG: ${{ steps.tag.outputs.tag }}
+          HASH: ${{ steps.hash.outputs.hash }}
         run: |
-         podman tag quay.io/opendatahub/odh-dashboard:main-${HASH} quay.io/opendatahub/odh-dashboard:${TAG}
+         podman tag quay.io/mroman_redhat/odh-dashboard:main-${{ env.HASH }} quay.io/mroman_redhat/odh-dashboard:${{ env.TAG }}
 
