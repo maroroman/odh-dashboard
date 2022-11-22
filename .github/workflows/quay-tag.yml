@@ -13,12 +13,12 @@ jobs:
         with:
           fetch-depth: '0'
       - run: sudo apt-get -y update
-      - run: sudo apt-get -y install podman
+      - run: sudo apt-get -y install skopeo
       - shell: bash
         env:
           QUAY_TOKEN: ${{ secrets.QUAY_ROBOT_TOKEN }}
         run: |
-         podman login quay.io -u mroman_redhat+odh_dashboard -p ${QUAY_TOKEN}
+         skopeo login quay.io -u mroman_redhat+odh_dashboard -p ${QUAY_TOKEN}
       - name: Get latest tag name
         id: tag
         run: echo "tag=$(git describe --tags)" >> $GITHUB_OUTPUT
@@ -30,7 +30,5 @@ jobs:
           TAG: ${{ steps.tag.outputs.tag }}
           HASH: ${{ steps.hash.outputs.hash }}
         run: |
-         podman pull quay.io/mroman_redhat/odh-dashboard:main-${{ env.HASH }}
-         podman tag quay.io/mroman_redhat/odh-dashboard:main-${{ env.HASH }} quay.io/mroman_redhat/odh-dashboard:${{ env.TAG }}
-         podman push quay.io/mroman_redhat/odh-dashboard:${{ env.TAG }}
-
+          skopeo copy docker://quay.io/mroman_redhat/odh-dashboard:main-${{ env.HASH }} /
+          docker://quay.io/mroman_redhat/odh-dashboard:${{ env.TAG }}
