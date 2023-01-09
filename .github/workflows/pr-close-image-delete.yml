@@ -5,7 +5,7 @@ on:
       - closed
 
 env:
-  QUAY_ODH_DASHBOARD_IMAGE_REPO: quay.io/opendatahub/odh-dashboard
+  QUAY_ODH_DASHBOARD_IMAGE_REPO: quay.io/mroman_redhat/odh-dashboard
 
 jobs:
   delete-pr-quay-image:
