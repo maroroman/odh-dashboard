@@ -28,7 +28,7 @@ jobs:
         run: |
          skopeo login quay.io -u ${QUAY_ROBOT_USERNAME} -p ${QUAY_TOKEN}
       - name: Delete PR image
-        shell: bashs
+        shell: bash
         env:
           PR: ${{ github.event.pull_request.number }}
         run: |
