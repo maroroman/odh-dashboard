@@ -17,7 +17,7 @@ spec:
     - name: v1
       schema:
         openAPIV3Schema:
-          description: OdhDocument is the Schema for the odhdocuments
+          description: Trigger dispatch test
             API
           properties:
             apiVersion:
