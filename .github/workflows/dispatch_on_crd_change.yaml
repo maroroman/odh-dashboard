@@ -6,11 +6,11 @@ on:
     - closed
     branches: 
     - main
-    paths: 
-    - 'manifests/crd/**'
+
 
 jobs:
   operator-sync:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
     - name: Send dispatch to operator
