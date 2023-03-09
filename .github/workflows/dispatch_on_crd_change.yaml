@@ -2,9 +2,12 @@ name: Send dispatch on CRD change
 
 on:
   pull_request:
-    types: [closed]
-    branches: [main]
-    paths: [manifests/crd/**]
+    types: 
+    - closed
+    branches: 
+    - main
+    paths: 
+    - manifests/crd/**
 
 jobs:
   operator-sync:
