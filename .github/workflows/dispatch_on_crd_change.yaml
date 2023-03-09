@@ -5,8 +5,9 @@ on:
     types: 
     - closed
     branches: 
-    - main
-
+    - 'main'
+    paths: 
+    - 'manifests/crd/**'
 
 jobs:
   operator-sync:
