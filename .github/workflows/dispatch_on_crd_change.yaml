@@ -7,7 +7,7 @@ on:
     branches: 
     - main
     paths: 
-    - manifests/crd/**
+    - 'manifests/crd/**'
 
 jobs:
   operator-sync:
