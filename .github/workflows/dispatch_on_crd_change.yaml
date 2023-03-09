@@ -1,12 +1,14 @@
 name: Send dispatch on CRD change
 
 on:
-  push:
+  pull_request:
+    types: [closed]
     branches: [main]
     paths: [manifests/crd/**]
 
 jobs:
   operator-sync:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
     - name: Send dispatch to operator
@@ -15,7 +17,7 @@ jobs:
         github-token: ${{ secrets.OPERATOR_TRIGGER_TOKEN }}
         script: |
           const result = await github.rest.actions.createWorkflowDispatch({
-            owner: 'opendathub-io',
+            owner: 'maroroman',
             repo: 'opendatahub-operator',
             workflow_id: 'sync_dashboard_crds.yml',
             ref: 'dashboard-sync'
