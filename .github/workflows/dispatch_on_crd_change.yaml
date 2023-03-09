@@ -1,0 +1,23 @@
+name: Send dispatch on CRD change
+
+on:
+  push:
+    branches: [main]
+    paths: [manifests/crd/**]
+
+jobs:
+  operator-sync:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Send dispatch to operator
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.OPERATOR_TRIGGER_TOKEN }}
+        script: |
+          const result = await github.rest.actions.createWorkflowDispatch({
+            owner: 'opendathub-io',
+            repo: 'opendatahub-operator',
+            workflow_id: 'sync_dashboard_crds.yml',
+            ref: 'dashboard-sync'
+          })
+          console.log(result)
