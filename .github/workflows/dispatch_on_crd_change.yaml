@@ -4,10 +4,6 @@ on:
   pull_request:
     types: 
     - closed
-    branches: 
-    - 'main'
-    paths: 
-    - 'manifests/crd/**'
 
 jobs:
   operator-sync:
